@@ -1,0 +1,173 @@
+version: '2.1'
+
+services:
+
+#########################################################
+####                    LOGGING                      ####
+#########################################################
+
+  master-metricbeat:
+    image: docker.elastic.co/beats/metricbeat:6.5.0
+    volumes:
+      - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - /proc:/hostfs/proc:ro
+      - /sys/fs/cgroup:/hostfs/sys/fs/cgroup:ro
+      - /:/hostfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+#      - metricbeat:/usr/share/metricbeat/data
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch
+      - KIBANA_HOST=kibana
+    restart: always
+    user: root
+    labels:
+      container_group: logging
+#    logging:
+#      driver: gelf
+#      options:
+#        gelf-address: udp://172.16.0.38:12201
+#        labels: container_group
+###############################################################
+  # Runs on your node(s) and forwards all logs to Logstash.
+#  master-filebeat:
+#    image: docker.elastic.co/beats/filebeat:6.5.0
+#    volumes:
+#      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+#      - /var/log:/host-logs
+#    restart: always
+#    user: root
+#    labels:
+#      container_group: logging
+#    logging:
+#      driver: gelf
+#      options:
+#        gelf-address: udp://172.16.0.38:12201
+#        labels: container_group
+
+#########################################################
+
+  # Aggregates logs and forwards them to Elasticsearch.
+#  logstash:
+#    image: docker.elastic.co/logstash/logstash-oss:6.5.0
+#    expose:
+#      - 12201/udp
+#      - 5044
+#    volumes:
+#      - ./logstash/config:/config
+#      - ./logstash/patterns:/opt/logstash/extra_patterns
+#    restart: always
+#    labels:
+#      container_group: logging
+#    networks:
+#      default:
+#        ipv4_address: 172.16.0.38
+#    logging:
+#      driver: gelf
+#      options:
+#        gelf-address: udp://172.16.0.38:12201
+#        labels: container_group
+#    command: logstash -f /config
+
+#########################################################
+
+  # Storage and search backend. Gets all logs from Logstash and is the backend that Kibana runs on.
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.5.0
+    expose:
+      - 9200
+    ports:
+      - 9200:9200
+    restart: always
+    command: elasticsearch -Etransport.host=127.0.0.1 -Ebootstrap.memory_lock=false
+    labels:
+      container_group: logging
+#    logging:
+#      driver: gelf
+#      options:
+#        gelf-address: udp://172.16.0.38:12201
+#        labels: container_group
+    networks:
+      default:
+        aliases:
+          - elasticsearchhost # Required for elastalert.
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+
+#########################################################
+
+  # Takes care of piling piling up Elasticsearch indices/logs. Can do many other things as well.
+
+  curator:
+    image: stefanprodan/es-curator-cron
+    environment:
+      - "PERIOD=15min"
+      - "KEEP_DAYS=14"
+      - "INDEX_PREFIX=logstash"
+    command: "--host elasticsearch --port 9200"
+    labels:
+      container_group: logging
+#    logging:
+#      driver: gelf
+#      options:
+#        gelf-address: udp://172.16.0.38:12201
+#        labels: container_group
+
+#########################################################
+
+  # Pretty frontend to explore and check out all your logs.
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.5.0
+    ports:
+      - 5601:5601
+    expose:
+      - 5601
+    restart: always
+    labels:
+      container_group: logging
+#    logging:
+#      driver: gelf
+#      options:
+#        gelf-address: udp://172.16.0.38:12201
+#        labels: container_group
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096 #Elastalert needs more memory to install plugin 
+
+#########################################################
+
+
+  rabbitmq:
+    image: rabbitmq:3.7.3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - 8080:15672
+      - 5672:5672
+    expose:
+      - 15672  #mgmt
+      - 5672   #amqp
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    networks:
+      - default
+
+#########################################################      
+      
+  perf-test:
+    image: pivotalrabbitmq/perf-test:latest
+    container_name: perf-test
+    command: --uri amqp://rabbitmq
+    networks:
+      - default
+
+
+#########################################################
+####                   Networking                    ####
+#########################################################
+
+# Extra-network is necessary to have a dedicated IP for Logstash to forwards log to.
+#networks:
+#  default:
+#    external:
+#      name: monitoring_logging
+
+#########################################################
