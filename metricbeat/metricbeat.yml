@@ -173,7 +173,7 @@ metricbeat.modules:
     - "network"
   hosts: ["unix:///var/run/docker.sock"]
   period: 10s
-  enabled: false
+  enabled: true
 
   # If set to true, replace dots in labels with `_`.
   #labels.dedot: false
@@ -198,11 +198,11 @@ metricbeat.modules:
   metricsets:
     - node
     - node_stats
-    #- index
-    #- index_recovery
-    #- index_summary
-    #- shard
-    #- ml_job
+    - index
+    - index_recovery
+    - index_summary
+    - shard
+    - ml_job
   period: 10s
   hosts: ["elasticsearch:9200"]
   #username: "elastic"
@@ -1706,20 +1706,20 @@ logging.files:
 # The reporting is disabled by default.
 
 # Set to true to enable the monitoring reporter.
-#xpack.monitoring.enabled: false
+xpack.monitoring.enabled: true
 
 # Uncomment to send the metrics to Elasticsearch. Most settings from the
 # Elasticsearch output are accepted here as well. Any setting that is not set is
 # automatically inherited from the Elasticsearch output configuration, so if you
 # have the Elasticsearch output configured, you can simply uncomment the
 # following line, and leave the rest commented out.
-#xpack.monitoring.elasticsearch:
+xpack.monitoring.elasticsearch:
 
   # Array of hosts to connect to.
   # Scheme and port can be left out and will be set to the default (http and 9200)
   # In case you specify and additional path, the scheme is required: http://localhost:9200/path
   # IPv6 addresses should always be defined as: https://[2001:db8::1]:9200
-  #hosts: ["localhost:9200"]
+  #hosts: ["elasticsearch:9200"]
 
   # Set gzip compression level.
   #compression_level: 0
