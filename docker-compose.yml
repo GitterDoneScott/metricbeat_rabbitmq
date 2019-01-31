@@ -6,7 +6,7 @@ services:
 ####                    LOGGING                      ####
 #########################################################
 
-  master-metricbeat:
+  metricbeat:
     image: docker.elastic.co/beats/metricbeat:6.5.0
     volumes:
       - ./metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
@@ -29,7 +29,7 @@ services:
 #        labels: container_group
 ###############################################################
   # Runs on your node(s) and forwards all logs to Logstash.
-#  master-filebeat:
+#  filebeat:
 #    image: docker.elastic.co/beats/filebeat:6.5.0
 #    volumes:
 #      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
