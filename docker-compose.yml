@@ -62,8 +62,8 @@ services:
     image: stefanprodan/es-curator-cron
     environment:
       - "PERIOD=15min"
-      - "KEEP_DAYS=14"
-      - "INDEX_PREFIX=logstash"
+      - "KEEP_DAYS=5"
+      - "INDEX_PREFIX='(?:metricbeat|filebeat)'"
     command: "--host elasticsearch --port 9200"
     labels:
       container_group: logging
