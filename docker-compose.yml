@@ -22,51 +22,17 @@ services:
     user: root
     labels:
       container_group: logging
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: udp://172.16.0.38:12201
-#        labels: container_group
 ###############################################################
   # Runs on your node(s) and forwards all logs to Logstash.
-#  filebeat:
-#    image: docker.elastic.co/beats/filebeat:6.5.0
-#    volumes:
-#      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
-#      - /var/log:/host-logs
-#    restart: always
-#    user: root
-#    labels:
-#      container_group: logging
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: udp://172.16.0.38:12201
-#        labels: container_group
-
-#########################################################
-
-  # Aggregates logs and forwards them to Elasticsearch.
-#  logstash:
-#    image: docker.elastic.co/logstash/logstash:6.5.0
-#    expose:
-#      - 12201/udp
-#      - 5044
-#    volumes:
-#      - ./logstash/config:/config
-#      - ./logstash/patterns:/opt/logstash/extra_patterns
-#    restart: always
-#    labels:
-#      container_group: logging
-#    networks:
-#      default:
-#        ipv4_address: 172.16.0.38
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: udp://172.16.0.38:12201
-#        labels: container_group
-#    command: logstash -f /config
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:6.5.0
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/log:/host-logs
+    restart: always
+    user: root
+    labels:
+      container_group: logging
 
 #########################################################
 
@@ -81,11 +47,6 @@ services:
     command: elasticsearch -Etransport.host=127.0.0.1 -Ebootstrap.memory_lock=false
     labels:
       container_group: logging
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: udp://172.16.0.38:12201
-#        labels: container_group
     networks:
       default:
         aliases:
@@ -106,11 +67,6 @@ services:
     command: "--host elasticsearch --port 9200"
     labels:
       container_group: logging
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: udp://172.16.0.38:12201
-#        labels: container_group
 
 #########################################################
 
@@ -124,16 +80,25 @@ services:
     restart: always
     labels:
       container_group: logging
-#    logging:
-#      driver: gelf
-#      options:
-#        gelf-address: udp://172.16.0.38:12201
-#        labels: container_group
     environment:
       - NODE_OPTIONS=--max-old-space-size=4096 #Elastalert needs more memory to install plugin 
 
 #########################################################
 
+ # Tool to run queries against your Elasticsearch and when alert when finding certain logs.
+  elastalert:
+    image: bitsensor/elastalert:1.0.0 
+    restart: always
+    ports:
+      - "3030:3030"
+    volumes:
+      - ./elastalert/config/elastalert.yaml:/opt/elastalert/config.yaml
+      - ./elastalert/config/config.json:/opt/elastalert-server/config/config.json
+      - ./elastalert/rules:/opt/elastalert/rules
+      - ./elastalert/rule_templates:/opt/elastalert/rule_templates
+    labels:
+      container_group: monitoring
+########################################################
 
   rabbitmq:
     image: rabbitmq:3.7.3-management-alpine
@@ -159,15 +124,3 @@ services:
     networks:
       - default
 
-
-#########################################################
-####                   Networking                    ####
-#########################################################
-
-# Extra-network is necessary to have a dedicated IP for Logstash to forwards log to.
-#networks:
-#  default:
-#    external:
-#      name: monitoring_logging
-
-#########################################################

@@ -19,7 +19,7 @@ filebeat.modules:
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    #var.paths:
+    var.paths: [/host-logs/*]
 
     # Convert the timestamp to UTC. Requires Elasticsearch >= 6.1.
     #convert_timezone: false
@@ -29,12 +29,12 @@ filebeat.modules:
     #prospector:
 
   # Authorization logs
-  #auth:
-    #enabled: true
+  auth:
+    enabled: true
 
     # Set custom paths for the log files. If left empty,
     # Filebeat will choose the paths depending on your OS.
-    #var.paths:
+    var.paths: [/host-logs/*]
 
     # Convert the timestamp to UTC. Requires Elasticsearch >= 6.1.
     #convert_timezone: false
@@ -670,15 +670,15 @@ filebeat.prospectors:
 # Configure what output to use when sending the data collected by the beat.
 
 #-------------------------- Elasticsearch output -------------------------------
-#output.elasticsearch:
+output.elasticsearch:
   # Boolean flag to enable or disable the output module.
-  #enabled: true
+  enabled: true
 
   # Array of hosts to connect to.
   # Scheme and port can be left out and will be set to the default (http and 9200)
   # In case you specify and additional path, the scheme is required: http://localhost:9200/path
   # IPv6 addresses should always be defined as: https://[2001:db8::1]:9200
-  #hosts: ["localhost:9200"]
+  hosts: ["elasticsearch:9200"]
 
   # Set gzip compression level.
   #compression_level: 0
@@ -764,12 +764,12 @@ filebeat.prospectors:
 
 
 #----------------------------- Logstash output ---------------------------------
-output.logstash:
+#output.logstash:
   # Boolean flag to enable or disable the output module.
-  enabled: true
+  #enabled: true
 
   # The Logstash hosts
-  hosts: ["logstash:5044"]
+  #hosts: ["logstash:5044"]
 
   # Number of workers per Logstash host.
   #worker: 1
@@ -1144,7 +1144,7 @@ output.logstash:
 # These settings control loading the sample dashboards to the Kibana index. Loading
 # the dashboards are disabled by default and can be enabled either by setting the
 # options here, or by using the `-setup` CLI flag or the `setup` command.
-#setup.dashboards.enabled: false
+setup.dashboards.enabled: true
 
 # The directory from where to read the dashboards. The default is the `kibana`
 # folder in the home path.
@@ -1161,7 +1161,7 @@ output.logstash:
 # In case the archive contains the dashboards from multiple Beats, this lets you
 # select which one to load. You can load all the dashboards in the archive by
 # setting this to the empty string.
-#setup.dashboards.beat: filebeat
+setup.dashboards.beat: filebeat
 
 # The name of the Kibana index to use for setting the configuration. Default is ".kibana"
 #setup.dashboards.kibana_index: .kibana
@@ -1181,7 +1181,7 @@ output.logstash:
 # These settings can be adjusted to load your own template or overwrite existing ones.
 
 # Set to false to disable template loading.
-#setup.template.enabled: true
+setup.template.enabled: true
 
 # Template name. By default the template name is "filebeat-%{[beat.version]}"
 # The template name and pattern has to be set in case the elasticsearch index pattern is modified.
