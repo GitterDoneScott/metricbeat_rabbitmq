@@ -1,0 +1,36 @@
+name: "RabbitMQ Node Down"
+is_enabled: true
+
+
+import: rule.config
+
+alert_subject: "RabbitMQ Node {0} is down"
+alert_subject_args:
+  - key
+
+index: metricbeat-*
+
+type: flatline
+
+query_key: rabbitmq.node.name
+doc_type: doc
+use_terms_query: true
+threshold: 0
+
+#filter:
+#  - query:
+#      query_string:
+#        query: '*'
+
+timeframe:
+  minutes: 2
+
+realert:
+  minutes: 5
+
+timestamp_field: '@timestamp'
+timestamp_type: iso
+
+alert:
+  - pagerduty
+#  - email
