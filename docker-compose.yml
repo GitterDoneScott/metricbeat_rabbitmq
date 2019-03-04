@@ -120,7 +120,7 @@ services:
   perf-test:
     image: pivotalrabbitmq/perf-test:latest
     container_name: perf-test
-    command: --uri amqp://rabbitmq
+    command: --uri amqp://rabbitmq --queue-pattern 'perf-test-%d' --queue-pattern-from 1 --queue-pattern-to 500 --producers 500 --consumers 1500 --rate 500 --consumer-rate 50
     networks:
       - default
 
