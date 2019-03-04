@@ -10,14 +10,15 @@ index: metricbeat-*
 type: spike
 threshold_ref: 5000
 timeframe:
-  hours: 1
+  minutes: 1
+#  hours: 1
 spike_height: 3
 spike_type: "up"
   
 filter:
   - query:
       query_string:
-        query: 'rabbitmq.exchange.messages.publish_in.count'
+        query: '_exists_: rabbitmq.exchange.messages.publish_in.count'
 
 realert:
   minutes: 5

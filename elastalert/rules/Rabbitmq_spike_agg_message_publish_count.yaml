@@ -1,0 +1,31 @@
+name: "RabbitMQ SPIKE AGG message publish count"
+is_enabled: true
+
+import: rule.config
+
+alert_subject: "RabbitMQ SPIKE in message publish count"
+
+index: metricbeat-*
+
+type: spike
+
+timeframe:
+  minutes: 5
+metric_agg_key: rabbitmq.exchange.messages.publish_in.count
+metric_agg_type: avg
+query_key: rabbitmq.exchange.name
+
+threshold_cur: 5000
+spike_height: 3
+spike_type: "up"
+  
+filter:
+- term:
+    metricset.name: exchange
+
+realert:
+  minutes: 5
+
+alert:
+  - pagerduty
+#  - email
