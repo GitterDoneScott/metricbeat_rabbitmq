@@ -1,0 +1,28 @@
+name: "Error count is high"
+is_enabled: true
+
+import: rule.config
+
+alert_subject: "Error count is high"
+
+index: metricbeat-*
+
+type: frequency
+num_events: 50
+timeframe:
+  hours: 4
+
+filter:
+  - query:
+      query_string:
+        query: 'error'
+
+realert:
+  minutes: 5
+
+timestamp_field: '@timestamp'
+timestamp_type: iso
+
+alert:
+  - pagerduty
+#  - email

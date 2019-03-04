@@ -23,3 +23,16 @@ docker-compose run --rm perf-test
 chmod +x setupdashboards.sh
 ./setupdashboards.sh
 ```
+
+# Testing Elastalert rules
+```
+#start a shell into the running elastalert container
+docker-compose exec elastalert sh
+
+
+cd /opt/elastalert
+
+#test the rule from the mounted rules volume
+elastalert-test-rule  --alert ./rules/Rabbitmq_node_disk_space_LT_500MB.yaml
+```
+

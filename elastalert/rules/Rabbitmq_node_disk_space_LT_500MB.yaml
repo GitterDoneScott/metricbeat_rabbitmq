@@ -1,0 +1,29 @@
+name: "RabbitMQ Node Disk Space LT 500MB"
+is_enabled: true
+
+
+import: rule.config
+
+alert_subject: "RabbitMQ Node {0} Disk Space LT 500MB"
+alert_subject_args:
+  - beat.hostname
+
+index: metricbeat-*
+
+type: any
+
+filter:
+  - query:
+      query_string:
+        query: 'rabbitmq.node.disk.free.bytes:<524288000'
+
+realert:
+  minutes: 5
+
+timestamp_field: '@timestamp'
+timestamp_type: iso
+
+alert:
+  - pagerduty
+#  - email
+

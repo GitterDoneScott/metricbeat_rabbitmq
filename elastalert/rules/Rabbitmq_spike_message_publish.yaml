@@ -1,0 +1,30 @@
+name: "RabbitMQ SPIKE in message publish count"
+is_enabled: true
+
+import: rule.config
+
+alert_subject: "RabbitMQ SPIKE in message publish count"
+
+index: metricbeat-*
+
+type: spike
+threshold_ref: 5000
+timeframe:
+  hours: 1
+spike_height: 3
+spike_type: "up"
+  
+filter:
+  - query:
+      query_string:
+        query: 'rabbitmq.exchange.messages.publish_in.count'
+
+realert:
+  minutes: 5
+
+timestamp_field: '@timestamp'
+timestamp_type: iso
+
+alert:
+  - pagerduty
+#  - email
