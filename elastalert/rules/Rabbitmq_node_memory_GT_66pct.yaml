@@ -1,0 +1,30 @@
+name: "RabbitMQ Node Memory usage greater than 66 percent"
+is_enabled: true
+
+
+import: rule.config
+
+alert_subject: "RabbitMQ Node {0} Memory usage greater than 66 percent"
+alert_subject_args:
+  - beat.hostname
+
+index: metricbeat-*
+
+type: any
+
+filter:
+  - query:
+      query_string:
+        query: 'system.memory.actual.used.pct:>.66'
+
+#TODO: join with a rabbit metric to ensure system is a rabbit node
+
+realert:
+  minutes: 5
+
+timestamp_field: '@timestamp'
+timestamp_type: iso
+
+alert:
+  - pagerduty
+#  - email
